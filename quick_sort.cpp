@@ -1,6 +1,7 @@
 ﻿#include "quick_sort.h"
 
-void QuickSort::QuickSortSolo(std::shared_ptr<int[]> array, long left, long right)
+void QuickSort::QuickSortSolo(std::shared_ptr<int[]> array, long left, 
+  long right)
 {
   if (left >= right) 
     return;
@@ -13,7 +14,6 @@ void QuickSort::QuickSortSolo(std::shared_ptr<int[]> array, long left, long righ
       ++leftBound;
     while (array[rightBound] > middle) 
       --rightBound;
-    //Меняем элементы местами
     if (leftBound <= rightBound) 
     {
       std::swap(array[leftBound], array[rightBound]);
@@ -25,7 +25,8 @@ void QuickSort::QuickSortSolo(std::shared_ptr<int[]> array, long left, long righ
   QuickSortSolo(array, leftBound, right);
 }
 
-void QuickSort::QuickSortAsync(std::shared_ptr<int[]> array, long left, long right)
+void QuickSort::QuickSortAsync(std::shared_ptr<int[]> array, long left, 
+  long right)
 {
   if (left >= right)
     return;
@@ -38,7 +39,6 @@ void QuickSort::QuickSortAsync(std::shared_ptr<int[]> array, long left, long rig
       ++leftBound;
     while (array[rightBound] > middle)
       --rightBound;
-    //Меняем элементы местами
     if (leftBound <= rightBound)
     {
       std::swap(array[leftBound], array[rightBound]);
@@ -55,7 +55,6 @@ void QuickSort::QuickSortAsync(std::shared_ptr<int[]> array, long left, long rig
   }
   else
   {
-    // запускаем обе части синхронно
     QuickSortAsync(array, left, rightBound);
     QuickSortAsync(array, leftBound, right);
   }
@@ -74,7 +73,6 @@ void QuickSort::QuickSortPool(std::shared_ptr<int[]> array, long left, long righ
       ++leftBound;
     while (array[rightBound] > middle)
       --rightBound;
-    //Меняем элементы местами
     if (leftBound <= rightBound)
     {
       std::swap(array[leftBound], array[rightBound]);
@@ -85,12 +83,14 @@ void QuickSort::QuickSortPool(std::shared_ptr<int[]> array, long left, long righ
 
   if (rightBound - left > threadCoef_*10)
   {
-    rh.PushRequest(QuickSortPool, array, left, rightBound);
+    std::packaged_task<void()>task([=] () 
+      { rh_.PushRequest(QuickSortPool, array, left, rightBound); });
     QuickSortPool(array, leftBound, right);
+    std::future<void> fut = task.get_future();
+    task();
   }
   else
   {
-    // запускаем обе части синхронно
     QuickSortPool(array, left, rightBound);
     QuickSortPool(array, leftBound, right);
   }

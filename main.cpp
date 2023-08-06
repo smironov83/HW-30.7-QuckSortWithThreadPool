@@ -14,17 +14,14 @@ auto main() -> int
   std::shared_ptr<int[]> array2(new int[arrSize]);
   std::shared_ptr<int[]> array3(new int[arrSize]);
   std::vector<std::thread> threads;
+  std::mutex mtx;
   auto start = std::chrono::high_resolution_clock::now();
   for (auto i = 0; i < threadCount; ++i)
     threads.push_back(std::thread([&array1, &array2, &array3, i]()
       { 
         for (auto j = arrSize / threadCount * i; j < arrSize / threadCount *
           (static_cast<unsigned long long>(i) + 1); ++j)
-        {
-          array1[j] = rand() % 500000;
-          array2[j] = array1[j];
-          array3[j] = array1[j];
-        }
+          array3[j] = array2[j] = array1[j] = rand() % 500000;
       }));
   for (auto &th : threads)
     if (th.joinable())
@@ -35,7 +32,7 @@ auto main() -> int
   printf("Время создания массива: %f seconds\n", seconds);
   QuickSort quickSort(arrSize);
   
-  // однопоточный запуск
+  //Однопоточный запуск.
   start = std::chrono::high_resolution_clock::now();
   quickSort.QuickSortSolo(array1, 0, arrSize - 1);
   end = std::chrono::high_resolution_clock::now();
@@ -43,7 +40,7 @@ auto main() -> int
   seconds = elapsedTime.count();
   printf("Время однопоточной сортировки: %f seconds\n", seconds);
   
-  // многопоточный запуск
+  //Многопоточный запуск async.
   start = std::chrono::high_resolution_clock::now();
   quickSort.QuickSortAsync(array2, 0, arrSize - 1);
   end = std::chrono::high_resolution_clock::now();
@@ -51,18 +48,22 @@ auto main() -> int
   seconds = elapsedTime.count();
   printf("Время многопоточной сортировки: %f seconds\n", seconds);
   for (auto i = 0; i < threads.size(); ++i)
-    threads[i] = std::thread([&array2, i] ()
+    threads[i] = std::thread([&array2, i, &mtx]()
       {
         for (auto j = arrSize / threadCount * i; j < (arrSize / threadCount * 
           (static_cast<unsigned long long>(i) + 1) - 1); ++j)
           if (array2[i] > array2[static_cast<ptrdiff_t>(i) + 1])
+          {
+            mtx.lock();
             std::cout << "Отсортировано с ошибкой!!!" << std::endl;
+            mtx.unlock();
+          }
       });
   for (auto &th : threads)
     if (th.joinable())
       th.join();
   
-  // многопоточный запуск в пуле потоков
+  //Многопоточный запуск в пуле потоков.
   start = std::chrono::high_resolution_clock::now();
   quickSort.QuickSortPool(array3, 0, arrSize - 1);
   end = std::chrono::high_resolution_clock::now();
@@ -70,18 +71,19 @@ auto main() -> int
   seconds = elapsedTime.count();;
   printf("Время многопоточной сортировки: %f seconds\n", seconds);
   for (auto i = 0; i < threads.size(); ++i)
-    threads[i] = std::thread([&array3, i] ()
+    threads[i] = std::thread([&array3, i, &mtx] ()
       {
         for (auto j = arrSize / threadCount * i; j < (arrSize / threadCount * 
           (static_cast<unsigned long long>(i) + 1) - 1); ++j)
           if (array3[i] > array3[static_cast<ptrdiff_t>(i) + 1])
+          {
+            mtx.lock();
             std::cout << "Отсортировано с ошибкой!!!" << std::endl;
+            mtx.unlock();
+          }
       });
   for (auto &th : threads)
     if (th.joinable())
       th.join();
-  //delete[] array1;
-  //delete[] array2;
-  //delete[] array3;
   return 0;
 }
