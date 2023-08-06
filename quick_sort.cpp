@@ -1,12 +1,12 @@
 ﻿#include "quick_sort.h"
 
-void QuickSort::QuickSortSolo(int *array, long left, long right)
+void QuickSort::QuickSortSolo(std::shared_ptr<int[]> array, long left, long right)
 {
   if (left >= right) 
     return;
   long leftBound = left;
   long rightBound = right;
-  long middle = array[(leftBound + rightBound) / 2];
+  long middle = array[(static_cast<ptrdiff_t>(leftBound) + rightBound) / 2];
   do 
   {
     while (array[leftBound] < middle)
@@ -25,13 +25,13 @@ void QuickSort::QuickSortSolo(int *array, long left, long right)
   QuickSortSolo(array, leftBound, right);
 }
 
-void QuickSort::QuickSortAsync(int *array, long left, long right)
+void QuickSort::QuickSortAsync(std::shared_ptr<int[]> array, long left, long right)
 {
   if (left >= right)
     return;
   long leftBound = left;
   long rightBound = right;
-  long middle = array[(leftBound + rightBound) / 2];
+  long middle = array[(static_cast<ptrdiff_t>(leftBound) + rightBound) / 2];
   do
   {
     while (array[leftBound] < middle)
@@ -61,13 +61,13 @@ void QuickSort::QuickSortAsync(int *array, long left, long right)
   }
 }
 
-void QuickSort::QuickSortPool(int *array, long left, long right)
+void QuickSort::QuickSortPool(std::shared_ptr<int[]> array, long left, long right)
 {
   if (left >= right)
     return;
   long leftBound = left;
   long rightBound = right;
-  long middle = array[(leftBound + rightBound) / 2];
+  long middle = array[(static_cast<ptrdiff_t>(leftBound) + rightBound) / 2];
   do
   {
     while (array[leftBound] < middle)
@@ -85,7 +85,7 @@ void QuickSort::QuickSortPool(int *array, long left, long right)
 
   if (rightBound - left > threadCoef_*10)
   {
-    rh.pushRequest(QuickSortPool, array, left, rightBound);
+    rh.PushRequest(QuickSortPool, array, left, rightBound);
     QuickSortPool(array, leftBound, right);
   }
   else

@@ -1,75 +1,64 @@
 #include "thread_pool.h"
 
-ThreadPool::ThreadPool():
-	nThreads_(std::thread::hardware_concurrency() != 0 ? std::thread::hardware_concurrency() : 1),
-	threadQueues_(nThreads_){}
+ThreadPool::ThreadPool(): mThreadCount_(std::thread::hardware_concurrency() 
+	!= 0 ? std::thread::hardware_concurrency() : 4), 
+	mThreadQueues_(mThreadCount_) {}
 
-void ThreadPool::start()
+ThreadPool::~ThreadPool() {}
+
+void ThreadPool::Start()
 {
-	for (size_t i = 0; i < nThreads_; ++i) 
-		//i - индекс локальной очереди
-		threads_.emplace_back(&ThreadPool::idle, this, i);
+	//i - индекс локальной очереди
+	for (auto i = 0; i < mThreadCount_; ++i) 
+		mThreads_.emplace_back(&ThreadPool::Idle, this, i);
 }
 
-
-void ThreadPool::stop()
+void ThreadPool::Stop()
 {
-	for (size_t i = 0; i < nThreads_; i++) {
-		// кладем задачу-пустышку в каждую очередь
-		// дл€ завершени€ потока
-		task_type empty_task;
-		threadQueues_[i].push(empty_task);
+	for (auto i = 0; i < mThreadCount_; ++i)
+	{
+		// ладет задачу-пустышку в каждую очередь дл€ завершени€ потока.
+		task_type emptyTask;
+		mThreadQueues_[i].Push(emptyTask);
 	}
-	for (auto &t : threads_) {
-		if (t.joinable()) {
-			t.join();
-		}
-	}
+	for (auto &th : mThreads_)
+		if (th.joinable())
+			th.join();
 }
 
-void ThreadPool::pushTask(FuncType f, int *arr, long l, long r)
+void ThreadPool::PushTask(func_type f, std::shared_ptr<int[]> arr, long l, 
+	long r)
 {
-	//¬ычислить индекс очереди куда положить задачу
-	size_t idQueueToPush = index_++ % nThreads_;
-	//—формировать функтор
+	//¬ычисл€ет индекс очереди куда положить задачу.
+	size_t idQueueToPush = mIndex_++ % mThreadCount_;
+	//‘ормирует функтор.
 	task_type task = [=] {f(arr, l, r); };
-	//ѕоместить в очередь
-	threadQueues_[idQueueToPush].push(task);
+	//ѕомещает в очередь.
+	mThreadQueues_[idQueueToPush].Push(task);
 }
 
-void ThreadPool::idle(size_t qindex)
+void ThreadPool::Idle(size_t qIndex)
 {
-	while (true) {
-		// обработка очередной задачи
+	while (true) 
+	{
+		//ќбрабатывает очередную задачу.
 		task_type task_to_do;
 		bool isGotTask = false;
 		size_t i = 0;
-		for (; i < nThreads_; ++i) 
-		{
-			//ѕопытка быстро забрать задачу из любой очереди, начина€ со своей
-			isGotTask = threadQueues_[(qindex + i) % nThreads_].fast_pop(task_to_do);
-			if (isGotTask) 
-			{
+		//ѕытаетс€ быстро забрать задачу из любой очереди, начина€ со своей.
+		for (; i < mThreadCount_; ++i) 
+			if (isGotTask = mThreadQueues_[(qIndex + i) % 
+				mThreadCount_].FastPop(task_to_do))
 				break;
-			}
-		}
-		//Ќет задач
-		if (!isGotTask) 
-		{
-			//∆дЄм задачу
-			threadQueues_[qindex].pop(task_to_do);
-		}
-		else if (!task_to_do) 
-		{
-			// чтобы не допустить зависани€ потока
-			// кладем обратно задачу-пустышку
-			threadQueues_[(qindex + i) % nThreads_].push(task_to_do);
-		}
+		//≈сли нет задач. ∆дЄт задачу.
+		if (!isGotTask)
+			mThreadQueues_[qIndex].Pop(task_to_do);
+		//„тобы не допустить зависани€ потока кладет обратно задачу-пустышку.
+		else if (!task_to_do)
+			mThreadQueues_[(qIndex + i) % mThreadCount_].Push(task_to_do);
 		if (!task_to_do) 
-		{
 			return;
-		}
-		//¬ыполнить задачу
+		//¬ыполн€ет задачу.
 		task_to_do();
 	}
 }

@@ -10,9 +10,9 @@ auto main() -> int
   system("chcp 1251");
   system("cls");
   srand((unsigned int) time(NULL));
-  int *array1 = new int[arrSize] {};
-  int *array2 = new int[arrSize] {};
-  int *array3 = new int[arrSize] {};
+  std::shared_ptr<int[]> array1(new int[arrSize]);
+  std::shared_ptr<int[]> array2(new int[arrSize]);
+  std::shared_ptr<int[]> array3(new int[arrSize]);
   std::vector<std::thread> threads;
   auto start = std::chrono::high_resolution_clock::now();
   for (auto i = 0; i < threadCount; ++i)
@@ -55,7 +55,7 @@ auto main() -> int
       {
         for (auto j = arrSize / threadCount * i; j < (arrSize / threadCount * 
           (static_cast<unsigned long long>(i) + 1) - 1); ++j)
-          if (array2[i] > array2[i + 1])
+          if (array2[i] > array2[static_cast<ptrdiff_t>(i) + 1])
             std::cout << "Отсортировано с ошибкой!!!" << std::endl;
       });
   for (auto &th : threads)
@@ -74,14 +74,14 @@ auto main() -> int
       {
         for (auto j = arrSize / threadCount * i; j < (arrSize / threadCount * 
           (static_cast<unsigned long long>(i) + 1) - 1); ++j)
-          if (array3[i] > array3[i + 1])
+          if (array3[i] > array3[static_cast<ptrdiff_t>(i) + 1])
             std::cout << "Отсортировано с ошибкой!!!" << std::endl;
       });
   for (auto &th : threads)
     if (th.joinable())
       th.join();
-  delete[] array1;
-  delete[] array2;
-  delete[] array3;
+  //delete[] array1;
+  //delete[] array2;
+  //delete[] array3;
   return 0;
 }

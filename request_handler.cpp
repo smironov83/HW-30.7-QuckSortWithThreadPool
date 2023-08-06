@@ -2,15 +2,16 @@
 
 RequestHandler::RequestHandler()
 {
-	threadPool_.start();
+	threadPool_.Start();
 }
 
 RequestHandler::~RequestHandler()
 {
-	threadPool_.stop();
+	threadPool_.Stop();
 }
 
-void RequestHandler::pushRequest(FuncType f, int *arr, long l, long r)
+void RequestHandler::PushRequest(func_type f, std::shared_ptr<int[]> arr, 
+	long l, long r)
 {
-	threadPool_.pushTask(f, arr, l, r);
+	threadPool_.PushTask(f, arr, l, r);
 }

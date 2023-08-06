@@ -1,17 +1,15 @@
 #pragma once
-
 #include "thread_pool.h"
 
-//Обработчик задач - закидывает задачи на исполнение
-//в свой внутренний пул потоков
+/*Обработчик задач - закидывает задачи на исполнение
+в свой внутренний пул потоков*/
 class RequestHandler 
 {
+	//Пул потоков.
+	ThreadPool threadPool_;
 	public:
 		RequestHandler();
 		~RequestHandler();
-		//Поместить задачу на выполнение
-		void pushRequest(FuncType f, int * arr, long l, long r);
-	private:
-		// пул потоков
-		ThreadPool threadPool_;
+		//Помещает задачу на выполнение.
+		void PushRequest(func_type f, std::shared_ptr<int[]> arr, long l, long r);
 };
