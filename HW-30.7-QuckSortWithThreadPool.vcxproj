@@ -134,7 +134,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="quick_sort.cpp" />
     <ClCompile Include="request_handler.cpp" />
     <ClCompile Include="thread_pool.cpp" />
   </ItemGroup>

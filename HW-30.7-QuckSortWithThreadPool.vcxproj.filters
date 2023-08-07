@@ -21,9 +21,6 @@
     <ClCompile Include="main.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="quick_sort.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
     <ClCompile Include="request_handler.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>

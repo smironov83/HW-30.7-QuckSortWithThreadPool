@@ -30,23 +30,23 @@ void ThreadPool::PushTask(func_type f, std::shared_ptr<int[]> arr, long l,
 	long r)
 {
 	//Вычисляет индекс очереди куда положить задачу.
-	size_t idQueueToPush = mIndex_++ % mThreadCount_;
+	auto idQueueToPush = mIndex_++ % mThreadCount_;
 	//Формирует функтор.
 	task_type task = [=] {f(arr, l, r); };
 	//Помещает в очередь.
 	mThreadQueues_[idQueueToPush].Push(task);
 }
 
-void ThreadPool::Idle(size_t qIndex)
+void ThreadPool::Idle(long qIndex)
 {
 	while (true) 
 	{
 		//Обрабатывает очередную задачу.
 		task_type task_to_do;
 		bool isGotTask = false;
-		size_t i = 0;
+		auto i = 0;
 		//Пытается быстро забрать задачу из любой очереди, начиная со своей.
-		for (; i < mThreadCount_; ++i) 
+		for (; i < mThreadCount_; ++i)
 			if (isGotTask = mThreadQueues_[(qIndex + i) % 
 				mThreadCount_].FastPop(task_to_do))
 				break;

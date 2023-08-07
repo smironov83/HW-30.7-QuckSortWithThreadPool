@@ -11,9 +11,9 @@ using func_type = void(*)(std::shared_ptr<int[]>, long, long);
 class ThreadPool 
 {
   //Количество потоков.
-  size_t mThreadCount_ = 0;
+  long mThreadCount_ = 0;
 	//Для равномерного распределения задач.
-	size_t mIndex_ = 0;
+	long mIndex_ = 0;
   //Контейнер потоков.
   std::vector<std::thread> mThreads_;
   //Очереди задач для потоков.
@@ -28,5 +28,5 @@ public:
 	//Добавляет задачу в очередь задач.
 	void PushTask(func_type f, std::shared_ptr<int[]> arr, long l, long r);
 	//Функция которую выполняют потоки если нет задач.
-	void Idle(size_t qIndex);
+	void Idle(long qIndex);
 };
