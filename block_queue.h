@@ -17,8 +17,8 @@ public:
 	{
 		std::lock_guard<std::mutex> locker(mLocker_);
 		mTaskQueue_.push(item);
-		//Уведомлеяет поток, который вызвал (Pop) чтобы забрал элемент из очереди.
-		notifier_.notify_one();
+		//Уведомляет поток, который вызвал (Pop) чтобы забрал элемент из очереди.
+		mNotifier_.notify_one();
 	}
 
 	//Блокирующий метод получения задачи из очереди. Ожидает появление задачи.
@@ -27,7 +27,7 @@ public:
 		std::unique_lock<std::mutex> locker(mLocker_);
 		//Ожидает пока какой-нибудь поток не поместит задачу в очередь (Push).
 		if (mTaskQueue_.empty())
-			notifier_.wait(locker, [this] {return !mTaskQueue_.empty(); });
+			mNotifier_.wait(locker, [this] {return !mTaskQueue_.empty(); });
 		//Забирает задачу.
 		item = mTaskQueue_.front();
 		mTaskQueue_.pop();
